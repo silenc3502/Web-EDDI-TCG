@@ -30,6 +30,10 @@ import battleFieldMusic from '@resource/music/battle_field/battle-field.mp3';
 
 import { createBattleFieldBackgroundFrame } from "../../../background/frame/BackgroundFrame";
 import { BackgroundRendererV2 } from "../../../background/renderer/BackgroundRendererV2";
+import { createDefaultFieldSeamFrame } from "../field/seam/frame/FieldSeamFrame";
+import { FieldSeamRenderer } from "../field/seam/renderer/FieldSeamRenderer";
+import { createDefaultBoardChromeFrame } from "../board/frame/BoardChromeFrame";
+import { BoardChromeRenderer } from "../board/renderer/BoardChromeRenderer";
 
 import {
     createDefaultYourFieldAreaFrame,
@@ -360,6 +364,26 @@ export class SimulationBattleFieldView implements Component {
         const backgroundGroup = await backgroundRenderer.build(backgroundFrame);
         scene.add(backgroundGroup);
         onResize.add('layout', (w, h) => backgroundRenderer.resize(backgroundFrame, backgroundGroup, w, h));
+
+        // 전장 위아래가 맞닿는 자리를 덮는 무늬 띠.
+        //
+        // **배경 바로 위, 나머지 전부의 아래**다. 그 자리에 Setting 표기·환경 카드·
+        // 턴 종료 단추가 있어서, 띠가 위로 오면 그것들을 가린다.
+        const fieldSeamFrame = createDefaultFieldSeamFrame();
+        const fieldSeamRenderer = new FieldSeamRenderer();
+        const fieldSeamGroup = await fieldSeamRenderer.build(fieldSeamFrame);
+        scene.add(fieldSeamGroup);
+        onResize.add('layout', (w, h) => fieldSeamRenderer.resize(fieldSeamFrame, fieldSeamGroup, w, h));
+
+        // 판 위에 고정으로 박힌 것들 — 배경에서 떼어 따로 올린다.
+        //
+        // **중간 지대보다 위**다. 아래면 그 알갱이가 이것들을 덮는다.
+        const boardChromeFrame = createDefaultBoardChromeFrame();
+        const boardChromeRenderer = new BoardChromeRenderer();
+        const boardChromeGroup = await boardChromeRenderer.build(boardChromeFrame);
+        scene.add(boardChromeGroup);
+        onResize.add('layout',
+            (w, h) => boardChromeRenderer.resize(boardChromeFrame, boardChromeGroup, w, h));
 
         const yourFieldAreaFrame = createDefaultYourFieldAreaFrame();
         const yourFieldAreaRenderer = new YourFieldAreaRendererV2();
